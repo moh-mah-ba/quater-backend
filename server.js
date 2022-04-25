@@ -8,6 +8,7 @@ const port = process.env.PORT || 5000;
 const cookieParser = require("cookie-parser");
 const cors = require("cors");
 const userRouter = require("./routes/users");
+const propertyRouter = require("./routes/properties");
 
 require("./config/passport")(passport); 
 
@@ -36,6 +37,7 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 app.use("/users", userRouter);
+app.use("/property" , propertyRouter);
 
 app.get("/", (req, res) => {
     res.send("sever is ready");
