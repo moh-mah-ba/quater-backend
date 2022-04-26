@@ -9,6 +9,7 @@ const cookieParser = require("cookie-parser");
 const cors = require("cors");
 const userRouter = require("./routes/users");
 const propertyRouter = require("./routes/properties");
+const Property = require("./schemas/property");
 
 require("./config/passport")(passport); 
 
@@ -40,7 +41,7 @@ app.use("/users", userRouter);
 app.use("/property" , propertyRouter);
 
 app.get("/", (req, res) => {
-    res.send("sever is ready");
+  res.send("server is ready")  
   });
 
   app.listen(port, () => {

@@ -34,6 +34,15 @@ router.get("/", async (req, res) => {
   });
 });
 
+router.get("/:id", async (req, res) => {
+  const property = await Property.findOne({ _id: req.params.id });
+  if (property) {
+    res.send(property);
+  } else {
+    res.status(404).send({ message: "property Not Found" });
+  }
+});
+
 router.post("/addproperty", async (req, res) => {
   const body = req.body;
   const schema = Joi.object({
@@ -53,8 +62,8 @@ router.post("/addproperty", async (req, res) => {
     bedrooms: Joi.number().min(1).required(),
     bathrooms: Joi.number().min(1).required(),
     garages: Joi.string().required(),
-    yearBuilt: Joi.date().required(),
-    available: Joi.date().required(),
+    yearBuilt: Joi.number().required(),
+    available: Joi.number().required(),
     basement: Joi.string().required(),
     extraDetails: Joi.string().required(),
     roofing: Joi.string().required(),
