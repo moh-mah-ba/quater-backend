@@ -9,7 +9,7 @@ cloudinary.config({
   api_key: process.env.API_KEY,
   api_secret: process.env.API_SECRET,
 });
-
+ 
 router.get("/", async (req, res) => {
    const url = new URL(req.url, "http://www.example.com");
 
@@ -40,6 +40,73 @@ router.get("/:id", async (req, res) => {
     res.send(property);
   } else {
     res.status(404).send({ message: "property Not Found" });
+  }
+});
+
+router.put("/edit-listing/:id", (req, res) => {
+  const body = req.body;
+  const schema = Joi.object({
+    title: Joi.string().required(),
+    description: Joi.string().required(),
+    price: Joi.number().min(0).required(),
+    typeOfProperty: Joi.string().required(),
+    saleType: Joi.string().required(),
+    saleStatus: Joi.string().required(),
+    imagesList: Joi.array().required(),
+    video: Joi.string(),
+    city: Joi.string().required(),
+    address: Joi.string().required(),
+    neighborhood: Joi.string().required(),
+    size: Joi.number().min(1).required(),
+    rooms: Joi.number().min(1).required(),
+    bedrooms: Joi.number().min(0).required(),
+    bathrooms: Joi.number().min(1).required(),
+    garages: Joi.string().required(),
+    yearBuilt: Joi.string().required(),
+    available: Joi.string().required(),
+    basement: Joi.string().required(),
+    extraDetails: Joi.string().required(),
+    roofing: Joi.string().required(),
+    floorNumber: Joi.number().min(1).required(),
+  });
+
+  
+  const { error } = schema.validate(req.body); 
+
+  if (error) {
+    res.send(error.message);
+  } else {
+    Property.findByIdAndUpdate({ _id: req.params.id },  {
+      title: body.title,
+      description: body.description,
+      price: Number(body.price),
+      typeOfProperty: body.typeOfProperty,
+      saleType: body.saleType,
+      saleStatus: body.saleStatus,
+      imagesList: body.imagesList,
+      video: body.video,
+      city: body.city,
+      address: body.address,
+      neighborhood: body.neighborhood,
+      size: Number(body.size),
+      rooms: Number(body.rooms),
+      bedrooms: Number(body.bedrooms),
+      bathrooms: Number(body.bathrooms),
+      garages: body.garages,
+      yearBuilt: body.yearBuilt,
+      available: body.available,
+      basement: body.basement,
+      extraDetails: body.extraDetails,
+      roofing: body.roofing,
+      floorNumber: Number(body.floorNumber),
+    },{ new: true }, (err , data) => {
+      if(err) {
+        console.log(err);
+    }
+    else {
+      res.send(data);
+    }
+    })
   }
 });
 
@@ -103,5 +170,18 @@ router.post("/addproperty", async (req, res) => {
     res.send(newProperty);
   }
 });
+
+router.get("/search/:search", async (req, res) => {
+  console.log("req.params.search" , req.params.search)
+  const PropertySearch = await Property.find({
+    title: { $regex: req.params.search, $options: "si" },
+  });
+  if (PropertySearch) {
+   return  res.send(PropertySearch);
+  } else {
+    return res.status(404).send({ message: "Property Not Found" });
+  }
+});
+
 
 module.exports = router;
