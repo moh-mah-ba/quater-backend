@@ -23,16 +23,18 @@ router.get("/", async (req, res) => {
 
   if (page < 1) page = 1;
 
+  const allProperties = await Property.find()
   const properties = await Property.find()
     .skip((page - 1) * itemsPerPage)
     .limit(itemsPerPage);
   const totalProperties = await Property.count();
   res.send({
+    allProperties,
     properties,
     totalPages: Math.ceil(totalProperties / itemsPerPage),
     currentItemsPerPage: itemsPerPage,
   });
-});
+}); 
 
 router.get("/:id", async (req, res) => {
   const property = await Property.findOne({ _id: req.params.id });
@@ -101,7 +103,7 @@ router.put("/edit-listing/:id", (req, res) => {
       floorNumber: Number(body.floorNumber),
     },{ new: true }, (err , data) => {
       if(err) {
-        console.log(err);
+        res.send(err);
     }
     else {
       res.send(data);
@@ -129,8 +131,8 @@ router.post("/addproperty", async (req, res) => {
     bedrooms: Joi.number().min(1).required(),
     bathrooms: Joi.number().min(1).required(),
     garages: Joi.string().required(),
-    yearBuilt: Joi.number().required(),
-    available: Joi.number().required(),
+    yearBuilt: Joi.string().required(),
+    available: Joi.string().required(),
     basement: Joi.string().required(),
     extraDetails: Joi.string().required(),
     roofing: Joi.string().required(),
@@ -172,7 +174,6 @@ router.post("/addproperty", async (req, res) => {
 });
 
 router.get("/search/:search", async (req, res) => {
-  console.log("req.params.search" , req.params.search)
   const PropertySearch = await Property.find({
     title: { $regex: req.params.search, $options: "si" },
   });
@@ -183,5 +184,23 @@ router.get("/search/:search", async (req, res) => {
   }
 });
 
+router.delete("/delete/:propertyId", async (req, res) => {
+  const propertyimages = await Property.findOne({ _id: req.params.propertyId })
+
+  const nrwIg = await propertyimages.images.map((image) => {
+    const publicId = image.public_id;
+    const secureUrl = image.secure_url;  
+    cloudinary.uploader.destroy(publicId);
+  })
+
+
+  const property = await Property.findOneAndDelete({ _id: req.params.propertyId });
+
+  if (property) {
+    res.send("Property is Deleted");
+  } else {
+    res.status(404).send({ message: "property Not Found" });
+  }
+})
 
 module.exports = router;
